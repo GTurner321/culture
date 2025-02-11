@@ -175,7 +175,7 @@
                             case 1:
                                 if (this.allCellsInS1orS7()) {
                                     if (y < 8) {
-                                        newStates[y][x] = Math.random() < 1/200 ? 2 : 1;
+                                        newStates[y][x] = Math.random() < 1/100 ? 2 : 1;
                                     } else {
                                         newStates[y][x] = 1;
                                     }
@@ -220,7 +220,7 @@
 
         // Create and start the simulation with updated parameters
         const grid = new Grid(36, 360);  // Width changed to 36
-        setInterval(() => grid.update(), 250);  // Time changed to 0.25 seconds
+        setInterval(() => grid.update(), 300);  // Time changed to 0.25 seconds
     </script>
 </body>
 </html>
