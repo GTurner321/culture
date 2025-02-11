@@ -43,14 +43,13 @@
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
-                this.state = 1; // Start with S1
+                this.state = 1;
                 this.element = document.createElement('div');
                 this.element.className = 'cell s1';
                 this.isMarked = false;
             }
 
             setState(newState) {
-                // If marked and about to transition to S7, stay at S6
                 if (this.isMarked && newState === 7) {
                     newState = 6;
                 }
@@ -69,12 +68,14 @@
                 this.height = height;
                 this.cells = [];
                 this.gridElement = document.getElementById('grid');
+                this.iterationCount = 0;
+                this.lowerBound = 0;
+                this.upperBound = height - 1;
                 this.initialize();
                 this.markRandomCells();
             }
 
             initialize() {
-                // Create all cells
                 for (let y = 0; y < this.height; y++) {
                     this.cells[y] = [];
                     for (let x = 0; x < this.width; x++) {
@@ -92,9 +93,8 @@
             }
 
             markRandomCells() {
-                // Mark 60 random cells anywhere in the grid
                 let markedCount = 0;
-                while (markedCount < 60) {
+                while (markedCount < 120) {  // Increased to 120 squares
                     const cell = this.getRandomCell();
                     if (!cell.isMarked) {
                         cell.setMarked();
@@ -103,11 +103,34 @@
                 }
             }
 
+            updateBoundaries() {
+                let lowestActive = 0;
+                for (let y = this.height - 1; y >= 0; y--) {
+                    if (this.cells[y].some(cell => cell.state === 2 || cell.state === 7)) {
+                        lowestActive = y;
+                        break;
+                    }
+                }
+
+                let highestActive = 0;
+                if (this.iterationCount > 20) {
+                    for (let y = 0; y < this.height; y++) {
+                        if (this.cells[y].some(cell => cell.state === 2 || cell.state === 7)) {
+                            highestActive = y;
+                            break;
+                        }
+                    }
+                }
+
+                this.lowerBound = this.iterationCount > 20 ? Math.max(0, highestActive - 4) : 0;
+                this.upperBound = Math.min(this.height - 1, lowestActive + 4);
+            }
+
             getNeighbors(x, y, isDiagonal) {
                 const neighbors = [];
                 const directions = isDiagonal ? 
-                    [[-1, -1], [-1, 1], [1, -1], [1, 1]] : // Diagonal neighbors
-                    [[-1, 0], [1, 0], [0, -1], [0, 1]];    // Direct neighbors
+                    [[-1, -1], [-1, 1], [1, -1], [1, 1]] :
+                    [[-1, 0], [1, 0], [0, -1], [0, 1]];
 
                 for (const [dx, dy] of directions) {
                     const newX = x + dx;
@@ -120,71 +143,83 @@
             }
 
             hasInfectiousCells() {
-                return this.cells.some(row => 
-                    row.some(cell => cell.state >= 2 && cell.state <= 6)
-                );
+                for (let y = this.lowerBound; y <= this.upperBound; y++) {
+                    if (this.cells[y].some(cell => cell.state >= 2 && cell.state <= 6)) {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             allCellsInS1orS7() {
-                return this.cells.every(row =>
-                    row.every(cell => cell.state === 1 || cell.state === 7)
-                );
+                for (let y = this.lowerBound; y <= this.upperBound; y++) {
+                    if (!this.cells[y].every(cell => cell.state === 1 || cell.state === 7)) {
+                        return false;
+                    }
+                }
+                return true;
             }
 
             update() {
-                const newStates = this.cells.map((row, y) => 
-                    row.map(cell => {
+                this.iterationCount++;
+                this.updateBoundaries();
+
+                const newStates = Array(this.height).fill().map(() => Array(this.width).fill(null));
+
+                for (let y = this.lowerBound; y <= this.upperBound; y++) {
+                    for (let x = 0; x < this.width; x++) {
+                        const cell = this.cells[y][x];
+                        
                         switch (cell.state) {
-                            case 1: // S1 (Non-infected)
+                            case 1:
                                 if (this.allCellsInS1orS7()) {
-                                    // Initial infection only in first 8 rows
                                     if (y < 8) {
-                                        return Math.random() < 1/200 ? 2 : 1;
+                                        newStates[y][x] = Math.random() < 1/200 ? 2 : 1;
+                                    } else {
+                                        newStates[y][x] = 1;
                                     }
-                                    return 1;
                                 } else if (this.hasInfectiousCells()) {
-                                    // Check for direct neighboring infections (1/9 chance)
-                                    const directInfectiousNeighbors = this.getNeighbors(cell.x, cell.y, false)
+                                    const directInfectiousNeighbors = this.getNeighbors(x, y, false)
                                         .filter(n => n.state >= 2 && n.state <= 5);
                                     
-                                    // Check for diagonal neighboring infections (1/12 chance)
-                                    const diagonalInfectiousNeighbors = this.getNeighbors(cell.x, cell.y, true)
+                                    const diagonalInfectiousNeighbors = this.getNeighbors(x, y, true)
                                         .filter(n => n.state >= 2 && n.state <= 5);
                                     
                                     if (directInfectiousNeighbors.length > 0 && Math.random() < 1/9) {
-                                        return 2;
+                                        newStates[y][x] = 2;
+                                    } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/12) {
+                                        newStates[y][x] = 2;
+                                    } else {
+                                        newStates[y][x] = 1;
                                     }
-                                    if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/12) {
-                                        return 2;
-                                    }
-                                    return 1;
+                                } else {
+                                    newStates[y][x] = 1;
                                 }
-                                return 1;
-                            case 2: return 3; // S2 -> S3
-                            case 3: return 4; // S3 -> S4
-                            case 4: return 5; // S4 -> S5
-                            case 5: return 6; // S5 -> S6
-                            case 6: 
-                                // Only progress to S7 if not marked
-                                return cell.isMarked ? 6 : 7;
-                            case 7: return 7; // S7 stays S7
-                            default: return cell.state;
+                                break;
+                            case 2: newStates[y][x] = 3; break;
+                            case 3: newStates[y][x] = 4; break;
+                            case 4: newStates[y][x] = 5; break;
+                            case 5: newStates[y][x] = 6; break;
+                            case 6: newStates[y][x] = cell.isMarked ? 6 : 7; break;
+                            case 7: newStates[y][x] = 7; break;
+                            default: newStates[y][x] = cell.state;
                         }
-                    })
-                );
+                    }
+                }
 
-                // Apply new states
-                for (let y = 0; y < this.height; y++) {
+                for (let y = this.lowerBound; y <= this.upperBound; y++) {
                     for (let x = 0; x < this.width; x++) {
-                        this.cells[y][x].setState(newStates[y][x]);
+                        if (newStates[y][x] !== null) {
+                            this.cells[y][x].setState(newStates[y][x]);
+                        }
                     }
                 }
             }
         }
 
-        // Create and start the simulation with 0.25-second intervals
-        const grid = new Grid(40, 240);
-        setInterval(() => grid.update(), 150);
+        // Create and start the simulation with updated parameters
+        const grid = new Grid(40, 360);  // Height increased to 360
+        setInterval(() => grid.update(), 150);  // Time decreased to 0.15 seconds
     </script>
 </body>
 </html>
