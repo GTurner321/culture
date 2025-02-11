@@ -15,7 +15,7 @@
 
         #grid {
             display: grid;
-            grid-template-columns: repeat(40, 1fr);
+            grid-template-columns: repeat(36, 1fr);  /* Changed to 36 columns */
             width: 100%;
             gap: 0;
         }
@@ -39,6 +39,7 @@
     <div id="grid"></div>
 
     <script>
+        // Cell and Grid class definitions remain the same until the infection probabilities
         class Cell {
             constructor(x, y) {
                 this.x = x;
@@ -94,7 +95,7 @@
 
             markRandomCells() {
                 let markedCount = 0;
-                while (markedCount < 120) {  // Increased to 120 squares
+                while (markedCount < 120) {
                     const cell = this.getRandomCell();
                     if (!cell.isMarked) {
                         cell.setMarked();
@@ -185,9 +186,9 @@
                                     const diagonalInfectiousNeighbors = this.getNeighbors(x, y, true)
                                         .filter(n => n.state >= 2 && n.state <= 5);
                                     
-                                    if (directInfectiousNeighbors.length > 0 && Math.random() < 1/10) {
+                                    if (directInfectiousNeighbors.length > 0 && Math.random() < 1/11) {  // Changed to 1/11
                                         newStates[y][x] = 2;
-                                    } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/13) {
+                                    } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/13) {  // Changed to 1/14
                                         newStates[y][x] = 2;
                                     } else {
                                         newStates[y][x] = 1;
@@ -218,8 +219,8 @@
         }
 
         // Create and start the simulation with updated parameters
-        const grid = new Grid(40, 360);  // Height increased to 360
-        setInterval(() => grid.update(), 200);  // Time decreased to 0.15 seconds
+        const grid = new Grid(36, 360);  // Width changed to 36
+        setInterval(() => grid.update(), 250);  // Time changed to 0.25 seconds
     </script>
 </body>
 </html>
