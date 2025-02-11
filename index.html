@@ -185,9 +185,9 @@
                                     const diagonalInfectiousNeighbors = this.getNeighbors(x, y, true)
                                         .filter(n => n.state >= 2 && n.state <= 5);
                                     
-                                    if (directInfectiousNeighbors.length > 0 && Math.random() < 1/9) {
+                                    if (directInfectiousNeighbors.length > 0 && Math.random() < 1/10) {
                                         newStates[y][x] = 2;
-                                    } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/12) {
+                                    } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/13) {
                                         newStates[y][x] = 2;
                                     } else {
                                         newStates[y][x] = 1;
@@ -219,7 +219,7 @@
 
         // Create and start the simulation with updated parameters
         const grid = new Grid(40, 360);  // Height increased to 360
-        setInterval(() => grid.update(), 150);  // Time decreased to 0.15 seconds
+        setInterval(() => grid.update(), 200);  // Time decreased to 0.15 seconds
     </script>
 </body>
 </html>
