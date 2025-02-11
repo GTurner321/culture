@@ -15,7 +15,7 @@
 
         #grid {
             display: grid;
-            grid-template-columns: repeat(30, 1fr);
+            grid-template-columns: repeat(40, 1fr);
             width: 100%;
             gap: 0;
         }
@@ -25,12 +25,14 @@
             transition: background-color 0.3s ease;
         }
 
-        /* State colors - with more subtle progression */
-        .s1 { background-color: #f0f8ff; } /* Non-infected (very pale light blue) */
-        .s2 { background-color: #d0e1f2; } /* Infected and infectious (slightly darker) */
-        .s3 { background-color: #b0c4e6; } /* More infected (slightly darker still) */
-        .s4 { background-color: #d0e1f2; } /* Infected but not infectious */
-        .s5 { background-color: #f0f8ff; } /* Recovered */
+        /* State colors with subtle blue progression */
+        .s1 { background-color: #f0f8ff; } /* Background */
+        .s2 { background-color: #f0f8ff; } /* Background */
+        .s3 { background-color: #e0ebf5; } /* Light blue */
+        .s4 { background-color: #d0e1f2; } /* Slightly darker */
+        .s5 { background-color: #c0d7ef; } /* Slightly darker still */
+        .s6 { background-color: #e0ebf5; } /* Same as S3 */
+        .s7 { background-color: #f0f8ff; } /* Background */
     </style>
 </head>
 <body>
@@ -44,11 +46,20 @@
                 this.state = 1; // Start with S1
                 this.element = document.createElement('div');
                 this.element.className = 'cell s1';
+                this.isMarked = false;
             }
 
             setState(newState) {
+                // If marked and about to transition to S7, stay at S6
+                if (this.isMarked && newState === 7) {
+                    newState = 6;
+                }
                 this.state = newState;
                 this.element.className = `cell s${newState}`;
+            }
+
+            setMarked() {
+                this.isMarked = true;
             }
         }
 
@@ -59,6 +70,7 @@
                 this.cells = [];
                 this.gridElement = document.getElementById('grid');
                 this.initialize();
+                this.markRandomCells();
             }
 
             initialize() {
@@ -69,6 +81,24 @@
                         const cell = new Cell(x, y);
                         this.cells[y][x] = cell;
                         this.gridElement.appendChild(cell.element);
+                    }
+                }
+            }
+
+            getRandomCell() {
+                const y = Math.floor(Math.random() * this.height);
+                const x = Math.floor(Math.random() * this.width);
+                return this.cells[y][x];
+            }
+
+            markRandomCells() {
+                // Mark 60 random cells anywhere in the grid
+                let markedCount = 0;
+                while (markedCount < 60) {
+                    const cell = this.getRandomCell();
+                    if (!cell.isMarked) {
+                        cell.setMarked();
+                        markedCount++;
                     }
                 }
             }
@@ -91,7 +121,13 @@
 
             hasInfectiousCells() {
                 return this.cells.some(row => 
-                    row.some(cell => cell.state === 2 || cell.state === 3 || cell.state === 4)
+                    row.some(cell => cell.state >= 2 && cell.state <= 6)
+                );
+            }
+
+            allCellsInS1orS7() {
+                return this.cells.every(row =>
+                    row.every(cell => cell.state === 1 || cell.state === 7)
                 );
             }
 
@@ -100,33 +136,38 @@
                     row.map(cell => {
                         switch (cell.state) {
                             case 1: // S1 (Non-infected)
-                                if (!this.hasInfectiousCells()) {
-                                    // Random infection only in top 20 lines when no infectious cells exist
-                                    if (y < 20) {
+                                if (this.allCellsInS1orS7()) {
+                                    // Initial infection only in first 8 rows
+                                    if (y < 8) {
                                         return Math.random() < 1/200 ? 2 : 1;
                                     }
                                     return 1;
-                                } else {
-                                    // Check for direct neighboring infections (1/4 chance)
+                                } else if (this.hasInfectiousCells()) {
+                                    // Check for direct neighboring infections (1/9 chance)
                                     const directInfectiousNeighbors = this.getNeighbors(cell.x, cell.y, false)
-                                        .filter(n => n.state === 2 || n.state === 3);
+                                        .filter(n => n.state >= 2 && n.state <= 5);
                                     
-                                    // Check for diagonal neighboring infections (1/6 chance)
+                                    // Check for diagonal neighboring infections (1/12 chance)
                                     const diagonalInfectiousNeighbors = this.getNeighbors(cell.x, cell.y, true)
-                                        .filter(n => n.state === 2 || n.state === 3);
+                                        .filter(n => n.state >= 2 && n.state <= 5);
                                     
-                                    if (directInfectiousNeighbors.length > 0 && Math.random() < 1/4) {
+                                    if (directInfectiousNeighbors.length > 0 && Math.random() < 1/9) {
                                         return 2;
                                     }
-                                    if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/6) {
+                                    if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/12) {
                                         return 2;
                                     }
                                     return 1;
                                 }
+                                return 1;
                             case 2: return 3; // S2 -> S3
                             case 3: return 4; // S3 -> S4
                             case 4: return 5; // S4 -> S5
-                            case 5: return 5; // S5 stays S5
+                            case 5: return 6; // S5 -> S6
+                            case 6: 
+                                // Only progress to S7 if not marked
+                                return cell.isMarked ? 6 : 7;
+                            case 7: return 7; // S7 stays S7
                             default: return cell.state;
                         }
                     })
@@ -141,9 +182,9 @@
             }
         }
 
-        // Create and start the simulation with 200 rows
-        const grid = new Grid(30, 200);
-        setInterval(() => grid.update(), 1000);
+        // Create and start the simulation with 0.25-second intervals
+        const grid = new Grid(40, 240);
+        setInterval(() => grid.update(), 150);
     </script>
 </body>
 </html>
