@@ -200,9 +200,9 @@
 
                                     if (directInfectiousNeighbors.length > 0 && Math.random() < 1/15) {
                                         newStates[y][x] = 2;
-                                    } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/16) {
+                                    } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/15) {
                                         newStates[y][x] = 2;
-                                    } else if (isTwoAboveInfectious && Math.random() < 1/15) {
+                                    } else if (isTwoAboveInfectious && Math.random() < 1/12) {
                                         newStates[y][x] = 2;
                                     } else {
                                         newStates[y][x] = 1;
