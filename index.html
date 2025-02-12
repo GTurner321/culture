@@ -200,7 +200,7 @@
 
                                     if (directInfectiousNeighbors.length > 0 && Math.random() < 1/15) {
                                         newStates[y][x] = 2;
-                                    } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/15) {
+                                    } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/16) {
                                         newStates[y][x] = 2;
                                     } else if (isTwoAboveInfectious && Math.random() < 1/12) {
                                         newStates[y][x] = 2;
@@ -234,7 +234,7 @@
         }
 
         const grid = new Grid(36, 360);
-        setInterval(() => grid.update(), 350);
+        setInterval(() => grid.update(), 400);
     </script>
 </body>
 </html>
