@@ -88,24 +88,19 @@
             }
 
             getRandomCell() {
-                // Modified to only select from first 16 rows for marked cells
-                const y = Math.floor(Math.random() * 16);
+                const y = Math.floor(Math.random() * this.height);
                 const x = Math.floor(Math.random() * this.width);
                 return this.cells[y][x];
             }
 
             markRandomCells() {
                 let markedCount = 0;
-                const maxAttempts = 1000; // Prevent infinite loop
-                let attempts = 0;
-                
-                while (markedCount < 120 && attempts < maxAttempts) {
+                while (markedCount < 120) {
                     const cell = this.getRandomCell();
                     if (!cell.isMarked) {
                         cell.setMarked();
                         markedCount++;
                     }
-                    attempts++;
                 }
             }
 
@@ -202,7 +197,7 @@
                                     const isTwoAboveInfectious = twoAboveCell && 
                                         twoAboveCell.state >= 2 && twoAboveCell.state <= 4;
 
-                                    if (directInfectiousNeighbors.length > 0 && Math.random() < 1/12) {
+                                    if (directInfectiousNeighbors.length > 0 && Math.random() < 1/13) {
                                         newStates[y][x] = 2;
                                     } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/14) {
                                         newStates[y][x] = 2;
