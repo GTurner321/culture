@@ -198,9 +198,9 @@
                                     const isTwoAboveInfectious = twoAboveCell && 
                                         twoAboveCell.state >= 2 && twoAboveCell.state <= 4;
 
-                                    if (directInfectiousNeighbors.length > 0 && Math.random() < 1/14) {
+                                    if (directInfectiousNeighbors.length > 0 && Math.random() < 1/15) {
                                         newStates[y][x] = 2;
-                                    } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/15) {
+                                    } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/16) {
                                         newStates[y][x] = 2;
                                     } else if (isTwoAboveInfectious && Math.random() < 1/15) {
                                         newStates[y][x] = 2;
