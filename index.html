@@ -124,7 +124,8 @@
                 }
 
                 this.lowerBound = this.iterationCount > 20 ? Math.max(0, highestActive - 4) : 0;
-                this.upperBound = Math.min(this.height - 1, lowestActive + 4);
+                this.upperBound = Math.min(this.height - 1, Math.max(16, lowestActive + 4));
+                
             }
 
             getNeighbors(x, y, isDiagonal) {
@@ -197,9 +198,9 @@
                                     const isTwoAboveInfectious = twoAboveCell && 
                                         twoAboveCell.state >= 2 && twoAboveCell.state <= 4;
 
-                                    if (directInfectiousNeighbors.length > 0 && Math.random() < 1/13) {
+                                    if (directInfectiousNeighbors.length > 0 && Math.random() < 1/14) {
                                         newStates[y][x] = 2;
-                                    } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/14) {
+                                    } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/15) {
                                         newStates[y][x] = 2;
                                     } else if (isTwoAboveInfectious && Math.random() < 1/15) {
                                         newStates[y][x] = 2;
