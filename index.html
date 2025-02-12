@@ -88,19 +88,24 @@
             }
 
             getRandomCell() {
-                const y = Math.floor(Math.random() * this.height);
+                // Modified to only select from first 16 rows for marked cells
+                const y = Math.floor(Math.random() * 16);
                 const x = Math.floor(Math.random() * this.width);
                 return this.cells[y][x];
             }
 
             markRandomCells() {
                 let markedCount = 0;
-                while (markedCount < 120) {
+                const maxAttempts = 1000; // Prevent infinite loop
+                let attempts = 0;
+                
+                while (markedCount < 120 && attempts < maxAttempts) {
                     const cell = this.getRandomCell();
                     if (!cell.isMarked) {
                         cell.setMarked();
                         markedCount++;
                     }
+                    attempts++;
                 }
             }
 
@@ -197,9 +202,9 @@
                                     const isTwoAboveInfectious = twoAboveCell && 
                                         twoAboveCell.state >= 2 && twoAboveCell.state <= 4;
 
-                                    if (directInfectiousNeighbors.length > 0 && Math.random() < 1/11) {
+                                    if (directInfectiousNeighbors.length > 0 && Math.random() < 1/12) {
                                         newStates[y][x] = 2;
-                                    } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/13) {
+                                    } else if (diagonalInfectiousNeighbors.length > 0 && Math.random() < 1/14) {
                                         newStates[y][x] = 2;
                                     } else if (isTwoAboveInfectious && Math.random() < 1/15) {
                                         newStates[y][x] = 2;
@@ -233,7 +238,7 @@
         }
 
         const grid = new Grid(36, 360);
-        setInterval(() => grid.update(), 300);
+        setInterval(() => grid.update(), 350);
     </script>
 </body>
 </html>
